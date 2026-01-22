@@ -1,6 +1,8 @@
 const http = require("http");
 const fs = require("fs");
 
+const PORT = process.env.PORT || 3000;
+
 const server = http.createServer((req, res) => {
     fs.readFile("index.html", (err, data) => {
         if (err) {
@@ -14,6 +16,6 @@ const server = http.createServer((req, res) => {
     });
 });
 
-server.listen(3000, () => {
-    console.log("Servidor rodando em http://localhost:3000");
+server.listen(PORT, () => {
+    console.log("Servidor rodando na porta " + PORT);
 });
