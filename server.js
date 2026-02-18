@@ -1,56 +1,59 @@
-const http = require("http");
-const fs = require("fs");
+const express = require("express");
+const sql = require("mssql");
 const path = require("path");
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-const server = http.createServer((req, res) => {
-    // Se acessar /, abre o index.html
-    let filePath = req.url === "/" 
-        ? path.join(__dirname, "index.html") 
-        : path.join(__dirname, req.url);
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    if (!filePath.startsWith(__dirname)) {
-        res.writeHead(403);
-        res.end("Acesso negado");
-        return;
+// Servir arquivos estáticos (HTML, CSS, imagens)
+app.use(express.static(__dirname));
+
+// Configuração Azure SQL
+const config = {
+    server: process.env.DB_SERVER, // ex: meuservidor.database.windows.net
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: 1433,
+    options: {
+        encrypt: true, // obrigatório para Azure
+        trustServerCertificate: false
+    }
+};
+
+// Rota POST para salvar usuário
+app.post("/usuarios", async (req, res) => {
+    const { nome, email, telefone } = req.body;
+
+    if (!nome || !email || !telefone) {
+        return res.status(400).json({ mensagem: "Dados inválidos" });
     }
 
-    let extname = path.extname(filePath).toLowerCase();
+    try {
+        await sql.connect(config);
 
-    let contentType = "text/html";
+        await sql.query`
+            INSERT INTO Usuarios (Nome, Email, Telefone)
+            VALUES (${nome}, ${email}, ${telefone})
+        `;
 
-    switch (extname) {
-        case ".png":
-            contentType = "image/png";
-            break;
-        case ".jpg":
-        case ".jpeg":
-            contentType = "image/jpeg";
-            break;
-        case ".css":
-            contentType = "text/css";
-            break;
-        case ".js":
-            contentType = "text/javascript";
-            break;
-        case ".ico":
-            contentType = "image/x-icon";
-            break;
+        res.json({ mensagem: "Cadastro salvo com sucesso!" });
+
+    } catch (err) {
+        console.error("Erro no banco:", err);
+        res.status(500).json({ mensagem: "Erro ao salvar no banco" });
     }
-
-    fs.readFile(filePath, (err, content) => {
-        if (err) {
-            res.writeHead(404, { "Content-Type": "text/plain" });
-            res.end("Arquivo não encontrado");
-            return;
-        }
-
-        res.writeHead(200, { "Content-Type": contentType });
-        res.end(content);
-    });
 });
 
-server.listen(PORT, () => {
+// Rota de teste
+app.get("/health", (req, res) => {
+    res.send("API funcionando no Azure 🚀");
+});
+
+app.listen(PORT, () => {
     console.log("Servidor rodando na porta " + PORT);
 });
