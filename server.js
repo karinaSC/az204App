@@ -10,7 +10,6 @@ const server = http.createServer((req, res) => {
         ? path.join(__dirname, "index.html") 
         : path.join(__dirname, req.url);
 
-    // Segurança básica: evita acessar fora da pasta do projeto
     if (!filePath.startsWith(__dirname)) {
         res.writeHead(403);
         res.end("Acesso negado");

@@ -5,7 +5,6 @@
     <title>Rafaini - Sistema</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Fonte bonita -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
@@ -31,13 +30,8 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             text-align: center;
             max-width: 420px;
-            width: 90%;
+            width: 95%;
             animation: fadeIn 0.6s ease;
-        }
-
-        .logo {
-            width: 220px;
-            margin-bottom: 20px;
         }
 
         h1 {
@@ -47,25 +41,68 @@
         }
 
         p {
-            color: #555;
+            color: #666;
             margin-bottom: 25px;
         }
 
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #e91e63;
+            box-shadow: 0 0 0 2px rgba(233,30,99,0.2);
+        }
+
         button {
+            width: 100%;
+            margin-top: 15px;
             background: linear-gradient(135deg, #e91e63, #ff5fa2);
             border: none;
             color: white;
-            padding: 14px 28px;
+            padding: 14px;
             font-size: 16px;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: 0.3s ease;
             box-shadow: 0 10px 20px rgba(233,30,99,0.4);
         }
 
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 15px 25px rgba(233,30,99,0.5);
+        }
+
+        .mensagem {
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .sucesso {
+            color: #2e7d32;
+        }
+
+        .erro {
+            color: #c62828;
         }
 
         .footer {
@@ -89,19 +126,70 @@
 <body>
 
     <div class="card">
-        <img src="/public/rafaini.png">
+        <h1>🚀 Sistema Rafaini</h1>
+        <p>Preencha seus dados para acessar o sistema</p>
 
-        <h1>🚀 Sistema no ar!</h1>
-        <p>O Novo sistema da  <strong>Rafaini</strong> está no ar!</p>
+        <form id="formCadastro">
+            <div class="input-group">
+                <label>Nome</label>
+                <input type="text" id="nome" required>
+            </div>
 
-        <button onclick="alert('Olá  😄 Seja bem-vinda(o) ao sistema Rafaini!')">
-            Entrar no sistema
-        </button>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="input-group">
+                <label>Telefone</label>
+                <input type="tel" id="telefone" required>
+            </div>
+
+            <button type="submit">Entrar no sistema</button>
+        </form>
+
+        <div id="mensagem" class="mensagem"></div>
 
         <div class="footer">
             © 2026 Rafaini • A essência da beleza
         </div>
     </div>
+
+<script>
+document.getElementById("formCadastro").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const mensagem = document.getElementById("mensagem");
+    mensagem.style.display = "none";
+
+    const dados = {
+        nome: document.getElementById("nome").value,
+        email: document.getElementById("email").value,
+        telefone: document.getElementById("telefone").value
+    };
+
+    try {
+        const response = await fetch("http://localhost:3000/usuarios", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dados)
+        });
+
+        const resultado = await response.json();
+
+        mensagem.textContent = resultado.mensagem;
+        mensagem.className = "mensagem sucesso";
+        mensagem.style.display = "block";
+
+        document.getElementById("formCadastro").reset();
+
+    } catch (error) {
+        mensagem.textContent = "Erro ao enviar dados. Tente novamente.";
+        mensagem.className = "mensagem erro";
+        mensagem.style.display = "block";
+    }
+});
+</script>
 
 </body>
 </html>
